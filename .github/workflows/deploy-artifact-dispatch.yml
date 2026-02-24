@@ -74,7 +74,7 @@ jobs:
           elif [ "$TARGET" = "Standalone" ]; then
             HOSTS=$STANDALONE
           else
-            HOSTS=$(jq -c -n "$PRIMARY + $BACKUP + $STANDALONE")
+            HOSTS=$(jq -c -n "$PRIMARY + $BACKUP")
           fi
           
           if [ "$HOSTS" = "[]" ]; then
