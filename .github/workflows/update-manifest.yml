@@ -15,6 +15,10 @@ on:
         description: 'Target environment'
         type: string
         required: true
+        
+concurrency:
+  group: manifest-${{ inputs.environment }}
+  cancel-in-progress: false
 
 jobs:
   update:
