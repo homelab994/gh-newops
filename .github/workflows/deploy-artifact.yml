@@ -30,8 +30,8 @@ jobs:
     steps:
       - id: hosts-list
         run: |
-          ENV="${{ github.event.inputs.environment }}"
-          TARGET="${{ github.event.inputs.target }}"
+          ENV="${{ inputs.environment }}"
+          TARGET="${{ inputs.target }}"
 
           case "$ENV" in
             dev)
@@ -79,7 +79,7 @@ jobs:
     needs: prepare
     if: needs.prepare.outputs.hosts-empty != 'true'
     runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment }}
+    environment: ${{ inputs.environment }}
 
     strategy:
       max-parallel: 1
@@ -97,6 +97,6 @@ jobs:
 #          key: ${{ secrets.SSH_KEY }}
 #          script: |
 #            /opt/myapp/deploy.sh \
-#              ${{ github.event.inputs.artifact-name }} \
-#              ${{ github.event.inputs.release-version }} \
-#              ${{ github.event.inputs.environment }}
+#              ${{ inputs.artifact-name }} \
+#              ${{ inputs.release-version }} \
+#              ${{ inputs.environment }}
