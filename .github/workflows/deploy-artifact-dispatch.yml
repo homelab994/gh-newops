@@ -1,11 +1,13 @@
-name: Deploy artifact
+name: Deploy artifact dispatch
 
 on:
-  workflow_call:
+  workflow_dispatch:
     inputs:
       artifact-name:
         description: 'Artifact name'
-        type: string
+        type: choice
+        options:
+          - gh-simple-spring
         required: true
       release-version:
         description: 'Release version'
@@ -13,13 +15,22 @@ on:
         required: true
       environment:
         description: 'Target environment'
-        type: string
+        type: choice
+        options:
+          - dev
+          - int
+          - preprod
+          - prod
         required: true
       target:
         description: 'Specify host or all'
-        type: string
-        required: false
-        default: 'all'
+        type: choice
+        options:
+          - All
+          - Primary
+          - Backup
+          - Standalone
+        required: true
 
 jobs:
   prepare:
