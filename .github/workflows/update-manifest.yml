@@ -2,23 +2,23 @@ name: Update Environment Manifest
 
 on:
   workflow_call:
-    artifact-name:
-      description: 'Artifact name'
-      type: string
-      required: true
-    release-version:
-      description: 'Release version'
-      type: string
-      required: true
-    environment:
-      description: 'Target environment'
-      type: string
-      required: true
+    inputs:
+      artifact-name:
+        description: 'Artifact name'
+        type: string
+        required: true
+      release-version:
+        description: 'Release version'
+        type: string
+        required: true
+      environment:
+        description: 'Target environment'
+        type: string
+        required: true
 
 jobs:
   update:
     runs-on: ubuntu-latest
-
     steps:
       - name: Generate GitHub App token
         id: app-token
@@ -32,7 +32,21 @@ jobs:
         with:
           repository: homelab994/gh-newops
           token: ${{ steps.app-token.outputs.token }}
+          ref: develop
           path: gh-newops
+
+      - name: Verify git repo
+        run: |
+          git -C gh-newops status
+
+      - name: Debug checkout
+        run: |
+          echo "Current directory:"
+          pwd
+          echo "Contents:"
+          ls -la
+          echo "gh-newops contents:"
+          ls -la gh-newops
 
       - name: Update manifest
         run: |
@@ -44,10 +58,22 @@ jobs:
              --arg ver "$VERSION" \
              '.[$svc]=$ver' $FILE > tmp && mv tmp $FILE
 
+          echo "gh-newops contents:"
+          cd gh-newops/vm-manifests
+          ls -la
+          cat ${{ inputs.environment }}.json
+
       - name: Commit changes
-        run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-          git add ${{ inputs.environment }}.json
-          git commit -m "Update ${{ inputs.artifact-name }} to ${{ inputs.release-version }} in ${{ inputs.environment }}"
-          git push origin develop
+        run: |    
+          git -C gh-newops config user.name "github-actions"
+          git -C gh-newops config user.email "github-actions@github.com"
+          
+          git -C gh-newops add vm-manifests/${{ inputs.environment }}.json
+          
+          if git -C gh-newops diff --cached --quiet; then
+            echo "No changes detected. Skipping commit."
+            exit 0
+          fi
+    
+          git -C gh-newops commit -m "Update ${{ inputs.artifact-name }} to ${{ inputs.release-version }} in ${{ inputs.environment }}"
+          git -C gh-newops push origin develop
