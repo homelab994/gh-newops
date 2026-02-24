@@ -1,0 +1,53 @@
+name: Update Environment Manifest
+
+on:
+  workflow_call:
+    artifact-name:
+      description: 'Artifact name'
+      type: string
+      required: true
+    release-version:
+      description: 'Release version'
+      type: string
+      required: true
+    environment:
+      description: 'Target environment'
+      type: string
+      required: true
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          repository: homelab994/gh-newops
+          token: ${{ steps.app-token.outputs.token }}
+          path: gh-newops
+
+      - name: Update manifest
+        run: |
+          FILE="gh-newops/vm-manifests/${{ inputs.environment }}.json"
+          SERVICE="${{ inputs.artifact-name }}"
+          VERSION="${{ inputs.release-version }}"
+          
+          jq --arg svc "$SERVICE" \
+             --arg ver "$VERSION" \
+             '.[$svc]=$ver' $FILE > tmp && mv tmp $FILE
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add ${{ inputs.environment }}.json
+          git commit -m "Update ${{ inputs.artifact-name }} to ${{ inputs.release-version }} in ${{ inputs.environment }}"
+          git push origin develop
