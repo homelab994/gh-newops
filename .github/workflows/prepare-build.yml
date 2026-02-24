@@ -1,0 +1,61 @@
+name: Prepare build
+
+on:
+  workflow_call:
+    inputs:
+      build-type:
+        description: 'Build type'
+        required: false
+        type: string
+        default: 'release-candidate'
+    outputs:
+      release-version:
+        description: 'Release version'
+        value: ${{ jobs.prepare-build.outputs.release-version }}
+
+jobs:
+  prepare-build:
+    runs-on: ubuntu-latest
+    outputs:
+      release-version: ${{ steps.release-version.outputs.release-version }}
+    steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: maven
+
+      # Release candidate flow
+      - name: Set release version (RC flow)
+        if: inputs.build-type == 'release-candidate'
+        run: |
+          mvn build-helper:parse-version versions:set \
+            -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.minorVersion}.\${parsedVersion.incrementalVersion} \
+            versions:commit
+
+      # Hotfix flow
+      - name: Set release version (HF flow)
+        if: inputs.build-type == 'hotfix'
+        run: |
+          mvn build-helper:parse-version versions:set \
+            -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.minorVersion}.\${parsedVersion.incrementalVersion}-\${parsedVersion.buildNumber} \
+            versions:commit
+
+      - name: Get release version
+        id: release-version
+        run: |
+          RELEASE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          echo "release-version=$RELEASE_VERSION" >> $GITHUB_OUTPUT

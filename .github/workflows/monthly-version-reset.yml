@@ -1,0 +1,52 @@
+name: Monthly Version Reset
+
+on:
+  schedule:
+    - cron: '0 0 1 * *'
+  workflow_dispatch:
+
+jobs:
+  reset-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch-name }}
+          fetch-depth: 0
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: maven
+
+      - name: Reset to new month version
+        id: new-month-version
+        run: |
+          YEAR=$(date -u +%y)
+          MONTH=$(date -u +%-m)
+          NEW_VERSION="$YEAR.$MONTH.0"
+          mvn build-helper:parse-version versions:set \
+            -DnewVersion=$NEW_VERSION-SNAPSHOT \
+            versions:commit
+          echo "new-version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Commit monthly reset
+        run: |
+          VERSION=${{ steps.new-month-version.outputs.new-version }}
+          
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          
+          git commit -am "v$VERSION released [skip ci]"
+          git push origin develop

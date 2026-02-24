@@ -1,0 +1,67 @@
+name: Increment version
+
+on:
+  workflow_call:
+    inputs:
+      branch-name:
+        description: "Branch name to be incremented"
+        required: false
+        type: string
+        default: 'develop'
+      build-type:
+        description: 'Build type'
+        required: false
+        type: string
+        default: 'release-candidate'
+      release-version:
+        description: "Release version"
+        required: true
+        type: string
+
+jobs:
+  increment-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: maven
+
+      # Release candidate flow
+      - name: Set release version (RC flow)
+        if: inputs.build-type == 'release-candidate'
+        run: |
+          mvn build-helper:parse-version versions:set \
+            -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.minorVersion}.\${parsedVersion.nextIncrementalVersion}-SNAPSHOT \
+            versions:commit
+
+      # Hotfix flow
+      - name: Set release version (HF flow)
+        if: inputs.build-type == 'hotfix'
+        run: |
+          mvn build-helper:parse-version versions:set \
+            -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.minorVersion}.\${parsedVersion.incrementalVersion}-\${parsedVersion.nextBuildNumber}-SNAPSHOT \
+            versions:commit
+
+      - name: Commit new snapshot
+        run: |
+          NEW_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git commit -am "v${{ inputs.release-version }} released [skip ci] "
+          git push origin ${{ inputs.branch-name }}
