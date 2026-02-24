@@ -1,0 +1,25 @@
+name: Develop build
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  prepare:
+    uses: ./.github/workflows/prepare-build.yml
+    secrets: inherit
+
+  build:
+    needs: prepare
+    uses: ./.github/workflows/build-analyze.yml
+    with:
+      release-version: ${{ needs.prepare.outputs.release-version }}
+    secrets: inherit
+
+  increment:
+    needs: [prepare, build]
+    uses: ./.github/workflows/increment-version.yml
+    with:
+      release-version: ${{ needs.prepare.outputs.release-version }}
+    secrets: inherit
