@@ -1,6 +1,20 @@
 name: Update Environment Manifest
 
 on:
+  workflow_call:
+    inputs:
+      artifact-name:
+        description: 'Artifact name'
+        type: string
+        required: true
+      release-version:
+        description: 'Release version'
+        type: string
+        required: true
+      environment:
+        description: 'Target environment'
+        type: string
+        required: true
   workflow_dispatch:
     inputs:
       artifact-name:
@@ -21,13 +35,20 @@ on:
           - prod
         
 concurrency:
-  group: manifest-${{ inputs.environment }}
+  group: manifest-${{ steps.resolve-inputs.outputs.environment }}
   cancel-in-progress: false
 
 jobs:
   update:
     runs-on: ubuntu-latest
     steps:
+      - name: Resolve inputs
+        id: resolve-inputs
+        run: |
+          echo "artifact-name=${{ inputs.artifact-name || github.event.inputs.artifact-name }}" >> $GITHUB_OUTPUT
+          echo "release-version=${{ inputs.release-version || github.event.inputs.release-version }}" >> $GITHUB_OUTPUT
+          echo "environment=${{ inputs.environment || github.event.inputs.environment }}" >> $GITHUB_OUTPUT
+
       - name: Generate GitHub App token
         id: app-token
         uses: actions/create-github-app-token@v1
@@ -38,15 +59,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          repository: homelab994/gh-newops
           token: ${{ steps.app-token.outputs.token }}
-          ref: develop
 
       - name: Update manifest
         run: |
-          FILE="vm-manifests/${{ inputs.environment }}.json"
-          SERVICE="${{ inputs.artifact-name }}"
-          VERSION="${{ inputs.release-version }}"
+          FILE="vm-manifests/${{ steps.resolve-inputs.outputs.environment }}.json"
+          SERVICE="${{ steps.resolve-inputs.outputs.artifact-name }}"
+          VERSION="${{ steps.resolve-inputs.outputs.release-version }}"
           
           jq --arg svc "$SERVICE" \
              --arg ver "$VERSION" \
@@ -59,12 +78,12 @@ jobs:
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           
-          git add vm-manifests/${{ inputs.environment }}.json
+          git add vm-manifests/${{ steps.resolve-inputs.outputs.environment }}.json
           
           if git diff --cached --quiet; then
             echo "No changes detected. Skipping commit."
             exit 0
           fi
     
-          git commit -m "Update ${{ inputs.artifact-name }} to ${{ inputs.release-version }} in ${{ inputs.environment }}"
+          git commit -m "Update ${{ steps.resolve-inputs.outputs.artifact-name }} to ${{ steps.resolve-inputs.outputs.release-version }} in ${{ steps.resolve-inputs.outputs.environment }}"
           git push origin develop

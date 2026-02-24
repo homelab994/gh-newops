@@ -20,6 +20,36 @@ on:
         type: string
         required: false
         default: 'all'
+  workflow_dispatch:
+    inputs:
+      artifact-name:
+        description: 'Artifact name'
+        type: choice
+        options:
+          - gh-simple-spring
+        required: true
+      release-version:
+        description: 'Release version'
+        type: string
+        required: true
+      environment:
+        description: 'Target environment'
+        type: choice
+        options:
+          - dev
+          - int
+          - preprod
+          - prod
+        required: true
+      target:
+        description: 'Specify host or all'
+        type: choice
+        options:
+          - All
+          - Primary
+          - Backup
+          - Standalone
+        required: true
 
 jobs:
   prepare:
@@ -28,10 +58,19 @@ jobs:
       hosts: ${{ steps.hosts-list.outputs.hosts }}
       hosts-empty: ${{ steps.hosts-list.outputs.hosts-empty }}
     steps:
-      - id: hosts-list
+      - name: Resolve inputs
+        id: resolve-inputs
         run: |
-          ENV="${{ inputs.environment }}"
-          TARGET="${{ inputs.target }}"
+          echo "artifact-name=${{ inputs.artifact-name || github.event.inputs.artifact-name }}" >> $GITHUB_OUTPUT
+          echo "release-version=${{ inputs.release-version || github.event.inputs.release-version }}" >> $GITHUB_OUTPUT
+          echo "environment=${{ inputs.environment || github.event.inputs.environment }}" >> $GITHUB_OUTPUT
+          echo "target=${{ inputs.target || github.event.inputs.target }}" >> $GITHUB_OUTPUT
+
+      - name: Get hosts list
+        id: hosts-list
+        run: |
+          ENV="${{ steps.resolve-inputs.outputs.environment }}"
+          TARGET="${{ steps.resolve-inputs.outputs.target }}"
 
           case "$ENV" in
             dev)
@@ -79,7 +118,7 @@ jobs:
     needs: prepare
     if: needs.prepare.outputs.hosts-empty != 'true'
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
+    environment: ${{ steps.resolve-inputs.outputs.environment }}
 
     strategy:
       max-parallel: 1
@@ -97,6 +136,13 @@ jobs:
 #          key: ${{ secrets.SSH_KEY }}
 #          script: |
 #            /opt/myapp/deploy.sh \
-#              ${{ inputs.artifact-name }} \
-#              ${{ inputs.release-version }} \
-#              ${{ inputs.environment }}
+#              ${{ steps.resolve-inputs.outputs.artifact-name }} \
+#              ${{ steps.resolve-inputs.outputs.release-version }} \
+#              ${{ steps.resolve-inputs.outputs.environment }}
+  update-manifest:
+    needs: [ deploy ]
+    uses: ./.github/workflows/update-manifest.yml
+    with:
+      artifact-name: ${{ steps.resolve-inputs.outputs.artifact-name }}
+      release-version: ${{ steps.resolve-inputs.outputs.release-version }}
+      environment: ${{ steps.resolve-inputs.outputs.environment }}
