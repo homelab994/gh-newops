@@ -105,7 +105,7 @@ jobs:
 #              ${{ inputs.release-version }} \
 #              ${{ inputs.environment }}
   update-manifest:
-    needs: [ prepare, deploy-dev ]
+    needs: [ prepare, deploy ]
     runs-on: ubuntu-latest
 
     steps:
