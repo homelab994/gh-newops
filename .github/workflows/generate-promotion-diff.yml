@@ -93,7 +93,7 @@ jobs:
                services:
                  reduce ($srcObj | keys[]) as $k
                    ({};
-                     if ($srcObj[$k] != $dstObj[$k]) then
+                     if ($srcObj[$k] != $dstObj[$k]); then
                        .[$k]=$srcObj[$k]
                      else .
                      end
