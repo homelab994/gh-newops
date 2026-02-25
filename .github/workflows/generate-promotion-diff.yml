@@ -75,7 +75,6 @@ jobs:
             --arg now "$NOW" \
             --arg actor "${{ github.actor }}" \
             --arg runId "${{ github.run_id }}" \
-            
             '
             {
                metadata: {
