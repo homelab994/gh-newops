@@ -17,10 +17,10 @@ on:
         description: 'Target environment'
         type: choice
         options:
-          - dev
-          - int
-          - preprod
-          - prod
+          - DEV
+          - INT
+          - PREPROD
+          - PROD
         required: true
       target:
         description: 'Specify host or all'
@@ -31,6 +31,10 @@ on:
           - Backup
           - Standalone
         required: true
+
+concurrency:
+  group: deploy-artifact-${{ github.event.inputs.artifact-name }}-env-${{ github.event.inputs.environment }}
+  cancel-in-progress: false
 
 jobs:
   prepare:
@@ -111,3 +115,26 @@ jobs:
 #              ${{ github.event.inputs.artifact-name }} \
 #              ${{ github.event.inputs.release-version }} \
 #              ${{ github.event.inputs.environment }}
+
+  update-manifest:
+    needs: [ prepare, deploy ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+
+      - name: Trigger update-manifest-dispatch
+        run: |
+          gh workflow run update-manifest.yml \
+            -R homelab994/gh-newops \
+            --ref develop \
+            -f artifact-name=${{ github.event.inputs.artifact-name }} \
+            -f release-version=${{ github.event.inputs.release-version }} \
+            -f environment=${{ github.event.inputs.environment }}
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
