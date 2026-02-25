@@ -62,18 +62,35 @@ jobs:
 
       - name: Deploy services
         run: |
+          FILE="vm-manifests/${{ inputs.environment }}.json"
           PROMOTE_FILE="vm-promotes/promote-${{ inputs.environment }}.json"
           for svc in $(jq -r '.services | keys[]' "$PROMOTE_FILE"); do
             ver=$(jq -r --arg s "$svc" '.services[$s]' "$PROMOTE_FILE")
             
             echo "Dispatching deploy fir $svc:$ver"
-          
-            gh workflow run deploy-artifact-dispatch.yml \
-              --ref develop \
-              -f artifact-name=$svc \
-              -f release-version=$ver \
-              -f environment=${{ inputs.environment }} \
-              -f target=${{ inputs.target }}
           done
-        env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          
+          for svc in $(jq -r '.services | keys[]' "$PROMOTE_FILE"); do
+            ver=$(jq -r --arg s "$svc" '.services[$s]' "$PROMOTE_FILE")
+
+            jq --arg svc "$svc" \
+               --arg ver "$ver" \
+               '.[$svc]=$ver' "$FILE" > tmp.json
+
+            mv tmp.json "$FILE"
+          done
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+          git add vm-manifests/${{ inputs.environment }}.json
+
+          if git diff --cached --quiet; then
+            echo "No changes detected. Skipping commit."
+            exit 0
+          fi
+
+          git commit -m "Update of manifest after promote"
+          git push origin develop
