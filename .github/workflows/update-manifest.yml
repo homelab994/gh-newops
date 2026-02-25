@@ -15,13 +15,13 @@ on:
         description: 'Target environment'
         type: choice
         options:
-          - dev
-          - int
-          - preprod
-          - prod
+          - DEV
+          - INT
+          - PREPROD
+          - PROD
         
 concurrency:
-  group: manifest-${{ inputs.environment }}
+  group: update-manifest-${{ inputs.environment }}
   cancel-in-progress: false
 
 jobs:
