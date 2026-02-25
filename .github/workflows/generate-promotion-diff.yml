@@ -5,15 +5,25 @@ on:
     inputs:
       source-env:
         description: 'Source environment'
-        type: string
+        type: choice
+        options:
+          - DEV
+          - INT
+          - PREPROD
+          - PROD
         required: true
       target-env:
         description: 'Target environment'
-        type: string
+        type: choice
+        options:
+          - DEV
+          - INT
+          - PREPROD
+          - PROD
         required: true
 
 concurrency:
-  group: update-manifest-${{ inputs.environment }}
+  group: generate-promotion-diff-${{ inputs.target-env }}
   cancel-in-progress: false
 
 jobs:
@@ -55,28 +65,22 @@ jobs:
           DST="vm-manifests/${{ inputs.target-env }}.json"
           PROMOTE_FILE="vm-promotes/promote-${{ inputs.target-env }}.json"
           
-          SERVICES=$(jq -n\
-            --argfile src "$SRC" \
-            --argfile dst "$DST" '
-              reduce ($src | keys[]) as $k
-              ({};
-                if ($src[$k] != $dst[$k]) then
-                  .[$k]=$src[$k]
-                else .
-                end
-              )
-            ')
-          
           NOW=$(date -u + "%Y-%m-%dT%H:%M:%SZ"
           
           jq -n \
-            --arg src "${{ inputs.source_env }}" \
-            --arg dst "${{ inputs.target_env }}" \
+            --slurpfile src "$SRC" \
+            --slurpfile dst "$DST" \
+            --arg src "${{ inputs.source-env }}" \
+            --arg dst "${{ inputs.target-env }}" \
             --arg now "$NOW" \
             --arg actor "${{ github.actor }}" \
             --arg runId "${{ github.run_id }}" \
-            --argjson services "$SERVICES" \
-            '{
+            
+            '
+            $srcObj := $src[0] |
+            $dstObj := $dst[0] |
+            
+            {
                metadata: {
                  source: $src,
                  target: $dst,
@@ -86,8 +90,16 @@ jobs:
                  generationRunId: $runId,
                  generatedAt: $now
                },
-               services: $services
-            }' > $OUTPUT
+               services:
+                 reduce ($srcObj | keys[]) as $k
+                   ({};
+                     if ($srcObj[$k] != $dstObj[$k]) then
+                       .[$k]=$srcObj[$k]
+                     else .
+                     end
+                   )
+            }
+            ' > $OUTPUT
 
       - name: Commit promote-target.json
         run: |
