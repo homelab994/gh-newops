@@ -91,7 +91,6 @@ jobs:
                  source: $srcEnv,
                  target: $dstEnv,
                  reviewed: false,
-                 promoted: false,
                  generatedBy: $actor,
                  generationRunId: $runId,
                  generatedAt: $now
