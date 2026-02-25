@@ -1,0 +1,104 @@
+name: Generate Promotion Diff
+
+on:
+  workflow_dispatch:
+    inputs:
+      source-env:
+        description: 'Source environment'
+        type: string
+        required: true
+      target-env:
+        description: 'Target environment'
+        type: string
+        required: true
+
+concurrency:
+  group: update-manifest-${{ inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  diff:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          repository: homelab994/gh-newops
+          token: ${{ steps.app-token.outputs.token }}
+          ref: develop
+
+      - name: Validate manifests existing
+        run: |
+          SRC="vm-manifests/${{ inputs.source-env }}.json"
+          DST="vm-manifests/${{ inputs.target-env }}.json"
+          
+          if [ ! -f "$SRC" ]; then
+            echo "Source manifest not found: $SRC"
+            exit 1
+          fi
+          
+          if [ ! -f "$DST" ]; then
+            echo "Target manifest not found: $DST"
+            exit 1
+          fi
+
+      - name: Generate promote-target.json
+        run: |
+          SRC="vm-manifests/${{ inputs.source-env }}.json"
+          DST="vm-manifests/${{ inputs.target-env }}.json"
+          PROMOTE_FILE="vm-promotes/promote-${{ inputs.target-env }}.json"
+          
+          SERVICES=$(jq -n\
+            --argfile src "$SRC" \
+            --argfile dst "$DST" '
+              reduce ($src | keys[]) as $k
+              ({};
+                if ($src[$k] != $dst[$k]) then
+                  .[$k]=$src[$k]
+                else .
+                end
+              )
+            ')
+          
+          NOW=$(date -u + "%Y-%m-%dT%H:%M:%SZ"
+          
+          jq -n \
+            --arg src "${{ inputs.source_env }}" \
+            --arg dst "${{ inputs.target_env }}" \
+            --arg now "$NOW" \
+            --arg actor "${{ github.actor }}" \
+            --arg runId "${{ github.run_id }}" \
+            --argjson services "$SERVICES" \
+            '{
+               metadata: {
+                 source: $src,
+                 target: $dst,
+                 reviewed: false,
+                 promoted: false,
+                 generatedBy: $actor,
+                 generationRunId: $runId,
+                 generatedAt: $now
+               },
+               services: $services
+            }' > $OUTPUT
+
+      - name: Commit promote-target.json
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          
+          git add vm-promotes/promote-${{ inputs.target-env }}.json
+          
+          if git diff --cached --quiet; then
+            echo "No changes detected. Skipping commit."
+            exit 0
+          fi
+          
+          git commit -m "Generate promotion diff ${{ inputs.source-env }} -> ${{ inputs.target-env }}
