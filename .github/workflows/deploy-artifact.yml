@@ -119,7 +119,7 @@ jobs:
 
       - name: Trigger update-manifest-dispatch
         run: |
-          gh workflow run update-manifest-dispatch.yml \
+          gh workflow run update-manifest.yml \
             -R homelab994/gh-newops \
             --ref develop \
             -f artifact-name=${{ github.event.repository.name }} \
