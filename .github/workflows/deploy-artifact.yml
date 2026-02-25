@@ -122,8 +122,8 @@ jobs:
           gh workflow run update-manifest.yml \
             -R homelab994/gh-newops \
             --ref develop \
-            -f artifact-name=${{ github.event.repository.name }} \
-            -f release-version=${{ needs.prepare.outputs.release-version }} \
-            -f environment=dev
+            -f artifact-name=${{ inputs.artifact-name }} \
+            -f release-version=${{ inputs.release-version }} \
+            -f environment=${{ inputs.environment }}
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
