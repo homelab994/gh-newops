@@ -96,7 +96,7 @@ jobs:
                      end
                    )
             }
-            ' > $OUTPUT
+            ' > $PROMOTE_FILE
 
       - name: Commit promote-target.json
         run: |
