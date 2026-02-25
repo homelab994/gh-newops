@@ -71,8 +71,8 @@ jobs:
             gh workflow run deploy-artifact-dispatch.yml \
               --ref develop \
               -f artifact-name=$svc \
-              -f release-version=ver \
-              -f environment=${{ inputs.environment }}
+              -f release-version=$ver \
+              -f environment=${{ inputs.environment }} \
               -f target=${{ inputs.target }}
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
