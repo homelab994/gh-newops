@@ -65,7 +65,7 @@ jobs:
           DST="vm-manifests/${{ inputs.target-env }}.json"
           PROMOTE_FILE="vm-promotes/promote-${{ inputs.target-env }}.json"
           
-          NOW=$(date -u + "%Y-%m-%dT%H:%M:%SZ")
+          NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
           
           jq -n \
             --slurpfile src "$SRC" \
