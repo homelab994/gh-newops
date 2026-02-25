@@ -38,22 +38,22 @@ jobs:
           TARGET="${{ inputs.target }}"
 
           case "$ENV" in
-            dev)
+            DEV)
               PRIMARY='["dev1.company.com"]'
               BACKUP='[]'
               STANDALONE='[]'
               ;;
-            int)
+            INT)
               PRIMARY='["int1.company.com"]'
               BACKUP='["int2.company.com"]'
               STANDALONE='[]'
               ;;
-            preprod)
+            PREPROD)
               PRIMARY='["preprod1.company.com"]'
               BACKUP='["preprod2.company.com"]'
               STANDALONE='["preprod3.company.com"]'
               ;;
-            prod)
+            PROD)
               PRIMARY='["prod1.company.com"]'
               BACKUP='["prod2.company.com"]'
               STANDALONE='["prod3.company.com"]'
