@@ -68,18 +68,18 @@ jobs:
           NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
           
           jq -n \
-            --slurpfile src "$SRC" \
-            --slurpfile dst "$DST" \
-            --arg src "${{ inputs.source-env }}" \
-            --arg dst "${{ inputs.target-env }}" \
+            --slurpfile srcFile "$SRC" \
+            --slurpfile dstFile "$DST" \
+            --arg srcEnv "${{ inputs.source-env }}" \
+            --arg dstEnv "${{ inputs.target-env }}" \
             --arg now "$NOW" \
             --arg actor "${{ github.actor }}" \
             --arg runId "${{ github.run_id }}" \
             '
             {
                metadata: {
-                 source: $src,
-                 target: $dst,
+                 source: $srcEnv,
+                 target: $dstEnv,
                  reviewed: false,
                  promoted: false,
                  generatedBy: $actor,
@@ -87,10 +87,10 @@ jobs:
                  generatedAt: $now
                },
                services:
-                 reduce ($src[0] | keys[]) as $k
+                 reduce ($srcFile[0] | keys[]) as $k
                    ({};
-                     if ($src[0][$k] != $dst[0][$k])
-                     then .[$k]=$src[0][$k]
+                     if ($srcFile[0][$k] != $dstFile[0][$k])
+                     then .[$k]=$srcFile[0][$k]
                      else .
                      end
                    )
