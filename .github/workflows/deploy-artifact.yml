@@ -21,6 +21,10 @@ on:
         required: false
         default: 'all'
 
+concurrency:
+  group: deploy-artifact-${{ inputs.artifact-name }}-env-${{ inputs.environment }}
+  cancel-in-progress: false
+
 jobs:
   prepare:
     runs-on: ubuntu-latest
@@ -100,3 +104,26 @@ jobs:
 #              ${{ inputs.artifact-name }} \
 #              ${{ inputs.release-version }} \
 #              ${{ inputs.environment }}
+  update-manifest:
+    needs: [ prepare, deploy-dev ]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+
+      - name: Trigger update-manifest-dispatch
+        run: |
+          gh workflow run update-manifest-dispatch.yml \
+            -R homelab994/gh-newops \
+            --ref develop \
+            -f artifact-name=${{ github.event.repository.name }} \
+            -f release-version=${{ needs.prepare.outputs.release-version }} \
+            -f environment=dev
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}

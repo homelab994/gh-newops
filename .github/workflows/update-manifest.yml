@@ -21,7 +21,7 @@ on:
           - prod
         
 concurrency:
-  group: manifest-${{ inputs.environment }}
+  group: update-manifest-${{ inputs.environment }}
   cancel-in-progress: false
 
 jobs:
