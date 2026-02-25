@@ -77,9 +77,6 @@ jobs:
             --arg runId "${{ github.run_id }}" \
             
             '
-            $srcObj := $src[0] |
-            $dstObj := $dst[0] |
-            
             {
                metadata: {
                  source: $src,
