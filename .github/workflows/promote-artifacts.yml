@@ -1,0 +1,78 @@
+name: Promote artifacts
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        type: choice
+        options:
+          - DEV
+          - INT
+          - PREPROD
+          - PROD
+        required: true
+      target:
+        description: 'Specify host or all'
+        type: choice
+        options:
+          - All
+          - Primary
+          - Backup
+          - Standalone
+        required: true
+
+concurrency:
+  group: promote-artifacts-${{ inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          repository: homelab994/gh-newops
+          token: ${{ steps.app-token.outputs.token }}
+          ref: develop
+
+      - name: Validate promote state
+        run: |
+          PROMOTE_FILE="vm-promotes/promote-${{ inputs.environment }}.json"
+          
+          if [ ! -f "$PROMOTE_FILE" ]; then
+            echo "Promote file not found: $PROMOTE_FILE"
+            exit 1
+          fi
+          
+          REVIEWED=$(jq -r '.metadata.reviewed' $PROMOTE_FILE)
+          
+          if [ "$REVIEWED" != "true" ]; then
+            echo "Promotion not reviewed yet."
+            exit 1
+          fi
+
+      - name: Deploy services
+        run: |
+          PROMOTE_FILE="vm-promotes/promote-${{ inputs.environment }}.json"
+          for svc in $(jq -r '.services | keys[]' "$PROMOTE_FILE"); do
+            ver=$(jq -r --arg s "$svc" '.services[$s]' "$PROMOTE_FILE")
+            
+            echo "Dispatching deploy fir $svc:$ver"
+          
+            gh workflow run deploy-artifact-dispatch.yml \
+              --ref develop \
+              -f artifact-name=$svc \
+              -f release-version=ver \
+              -f environment=${{ inputs.environment }}
+              -f target=${{ inputs.target }}
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
