@@ -74,5 +74,6 @@ jobs:
               -f release-version=$ver \
               -f environment=${{ inputs.environment }} \
               -f target=${{ inputs.target }}
+          done
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
