@@ -1,7 +1,7 @@
 name: Update Environment Manifest
 
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       artifact-name:
         description: 'Artifact name'
@@ -13,13 +13,9 @@ on:
         required: true
       environment:
         description: 'Target environment'
-        type: choice
-        options:
-          - DEV
-          - INT
-          - PREPROD
-          - PROD
-        
+        type: string
+        required: true
+
 concurrency:
   group: update-manifest-${{ inputs.environment }}
   cancel-in-progress: false

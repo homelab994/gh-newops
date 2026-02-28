@@ -27,8 +27,10 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  promote:
+  prepare-promote:
     runs-on: ubuntu-latest
+    outputs:
+      services: ${{ steps.extract-services.outputs.services }}
     steps:
       - name: Generate GitHub App token
         id: app-token
@@ -59,38 +61,86 @@ jobs:
             echo "Promotion not reviewed yet."
             exit 1
           fi
-
-      - name: Deploy services
+      - name: Extract services
+        id: extract-services
         run: |
-          FILE="vm-manifests/${{ inputs.environment }}.json"
           PROMOTE_FILE="vm-promotes/promote-${{ inputs.environment }}.json"
-          for svc in $(jq -r '.services | keys[]' "$PROMOTE_FILE"); do
-            ver=$(jq -r --arg s "$svc" '.services[$s]' "$PROMOTE_FILE")
-            
-            echo "Dispatching deploy fir $svc:$ver"
-          done
+      
+          SERVICES=$(jq -c '
+            .services
+            | to_entries
+            | map({
+                svc: .key,
+                ver: .value
+              })
+          ' "$PROMOTE_FILE")
+      
+          echo "services=$SERVICES" >> $GITHUB_OUTPUT
+
+  deploy:
+    needs: prepare-promote
+    strategy:
+      max-parallel: 1
+      matrix:
+        service: ${{ fromJson(needs.prepare-promote.outputs.services) }}
+    uses: ./.github/workflows/deploy-artifact.yml
+    with:
+      artifact-name: ${{ matrix.service.svc }}
+      release-version: ${{ matrix.service.ver }}
+      environment: ${{ inputs.environment }}
+      target: ${{ inputs.target }}
+    secrets: inherit
+
+  finalize:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          repository: homelab994/gh-newops
+          token: ${{ steps.app-token.outputs.token }}
+          ref: develop
+
+      - name: Update promoted metadata
+        run: |
+          PROMOTE_FILE="vm-promotes/promote-${{ inputs.environment }}.json"
+          TARGETS=("${{ inputs.target }}")
           
-          for svc in $(jq -r '.services | keys[]' "$PROMOTE_FILE"); do
-            ver=$(jq -r --arg s "$svc" '.services[$s]' "$PROMOTE_FILE")
-
-            jq --arg svc "$svc" \
-               --arg ver "$ver" \
-               '.[$svc]=$ver' "$FILE" > tmp.json
-
-            mv tmp.json "$FILE"
+          for TARGET in "${TARGETS[@]}"; do
+            jq --arg target "$TARGET" '
+              .metadata.promoted =
+                (
+                  (.metadata.promoted // []) as $existing
+                  |
+                  if ($existing | index($target))
+                  then $existing
+                  else $existing + [$target]
+                  end
+                )
+            ' "$PROMOTE_FILE" > tmp.json
+          
+            mv tmp.json "$PROMOTE_FILE"
           done
 
-      - name: Commit and push changes
+      - name: Commit promote metadata
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-
-          git add vm-manifests/${{ inputs.environment }}.json
-
+          
+          git add vm-promotes/promote-${{ inputs.environment }}.json
+          
           if git diff --cached --quiet; then
-            echo "No changes detected. Skipping commit."
+            echo "No metadata changes."
             exit 0
           fi
-
-          git commit -m "Update of manifest after promote"
+          
+          git commit -m "Mark ${{ inputs.environment }} promoted to ${{ inputs.target }}"
           git push origin develop

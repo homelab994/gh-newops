@@ -3,13 +3,16 @@
     "source": "DEV",
     "target": "INT",
     "reviewed": true,
+    "promoted": [
+      "Primary",
+      "Backup"
+    ],
     "generatedBy": "grusu94",
-    "generationRunId": "22410584560",
-    "generatedAt": "2026-02-25T18:35:56Z"
+    "generationRunId": "22526021876",
+    "generatedAt": "2026-02-28T18:02:29Z"
   },
   "services": {
     "another-service": "26.1.12",
-    "gh-simple-spring": "26.2.34",
-    "inexistent-service": "25.12.5"
+    "gh-simple-spring": "26.2.34"
   }
 }

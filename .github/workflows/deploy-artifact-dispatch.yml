@@ -120,23 +120,8 @@ jobs:
 
   update-manifest:
     needs: [ prepare, deploy ]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Generate GitHub App token
-        id: app-token
-        uses: actions/create-github-app-token@v1
-        with:
-          app-id: ${{ vars.APP_ID }}
-          private-key: ${{ secrets.APP_PRIVATE_KEY }}
-          owner: ${{ github.repository_owner }}
-
-      - name: Trigger update-manifest-dispatch
-        run: |
-          gh workflow run update-manifest.yml \
-            -R homelab994/gh-newops \
-            --ref develop \
-            -f artifact-name=${{ github.event.inputs.artifact-name }} \
-            -f release-version=${{ github.event.inputs.release-version }} \
-            -f environment=${{ github.event.inputs.environment }}
-        env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+    uses: ./.github/workflows/update-manifest.yml
+    with:
+      artifact-name: ${{ inputs.artifact-name }}
+      release-version: ${{ inputs.release-version }}
+      environment: ${{ inputs.environment }}
