@@ -42,15 +42,15 @@ jobs:
 
       - name: Update manifest
         run: |
-          FILE="vm-manifests/${{ inputs.environment }}.json"
+          MANIFEST_FILE="vm-manifests/${{ inputs.environment }}.json"
           SERVICE="${{ inputs.artifact-name }}"
           VERSION="${{ inputs.release-version }}"
           
           jq --arg svc "$SERVICE" \
              --arg ver "$VERSION" \
-             '.[$svc]=$ver' $FILE > tmp.json
+             '.[$svc]=$ver' $MANIFEST_FILE > tmp.json
           
-          mv tmp.json $FILE
+          mv tmp.json $MANIFEST_FILE
 
       - name: Commit and push changes
         run: |    
