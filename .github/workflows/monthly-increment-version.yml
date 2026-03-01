@@ -1,10 +1,10 @@
-name: Monthly Bump Version
+name: Monthly Increment Version
 
 on:
   workflow_call:
 
 jobs:
-  bump-version:
+  increment-version:
     runs-on: ubuntu-latest
     steps:
       - name: Generate GitHub App token
@@ -28,8 +28,8 @@ jobs:
           java-version: 17
           cache: maven
 
-      - name: Bump month version
-        id: bump-month
+      - name: Increment month version
+        id: increment-month
         run: |
           YEAR=$(date -u +%y)
           MONTH=$(date -u +%-m)
@@ -39,9 +39,9 @@ jobs:
             versions:commit
           echo "new-version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
 
-      - name: Commit monthly bump
+      - name: Commit monthly increment
         run: |
-          VERSION=${{ steps.bump-month.outputs.new-version }}
+          VERSION=${{ steps.increment-month.outputs.new-version }}
           
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
