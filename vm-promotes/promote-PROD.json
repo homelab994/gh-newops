@@ -2,7 +2,7 @@
   "metadata": {
     "source": "PREPROD",
     "target": "PROD",
-    "reviewed": false,
+    "reviewed": true,
     "promoted": [],
     "generatedBy": "grusu94",
     "generationRunId": "22545016889",
