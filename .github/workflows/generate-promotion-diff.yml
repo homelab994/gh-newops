@@ -120,5 +120,5 @@ jobs:
             exit 0
           fi
           
-          git commit -m "Generate promotion diff ${{ inputs.source-env }} -> ${{ inputs.target-env }}"
+          git commit -m "[PROMOTION-DIFF] ${{ inputs.source-env }} <-> ${{ inputs.target-env }}"
           git push origin develop

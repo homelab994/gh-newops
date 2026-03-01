@@ -142,5 +142,5 @@ jobs:
             exit 0
           fi
           
-          git commit -m "Mark ${{ inputs.environment }} promoted to ${{ inputs.target }}"
+          git commit -m "[PROMOTION] ${{ inputs.environment }} -> ${{ inputs.target }}"
           git push origin develop
