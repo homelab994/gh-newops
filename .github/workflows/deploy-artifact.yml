@@ -20,6 +20,38 @@ on:
         type: string
         required: false
         default: 'all'
+  workflow_dispatch:
+    inputs:
+      artifact-name:
+        description: 'Artifact name'
+        type: choice
+        options:
+          - another-service
+          - gh-simple-spring
+          - inexistent-service
+        required: true
+      release-version:
+        description: 'Release version'
+        type: string
+        required: true
+      environment:
+        description: 'Target environment'
+        type: choice
+        options:
+          - DEV
+          - INT
+          - PREPROD
+          - PROD
+        required: true
+      target:
+        description: 'Specify host or all'
+        type: choice
+        options:
+          - All
+          - Primary
+          - Backup
+          - Standalone
+        required: true
 
 concurrency:
   group: deploy-artifact-${{ inputs.artifact-name }}-env-${{ inputs.environment }}
