@@ -25,6 +25,9 @@ concurrency:
   group: deploy-artifact-${{ inputs.artifact-name }}-env-${{ inputs.environment }}
   cancel-in-progress: false
 
+permissions:
+  contents: write
+
 jobs:
   prepare:
     runs-on: ubuntu-latest
