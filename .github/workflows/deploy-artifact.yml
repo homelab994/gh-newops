@@ -112,3 +112,4 @@ jobs:
       artifact-name: ${{ inputs.artifact-name }}
       release-version: ${{ inputs.release-version }}
       environment: ${{ inputs.environment }}
+    secrets: inherit
