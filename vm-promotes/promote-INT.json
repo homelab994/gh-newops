@@ -4,7 +4,8 @@
     "target": "INT",
     "reviewed": true,
     "promoted": [
-      "Primary"
+      "Primary",
+      "Backup"
     ],
     "generatedBy": "grusu94",
     "generationRunId": "22548352036",
