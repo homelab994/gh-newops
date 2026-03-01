@@ -137,8 +137,8 @@ jobs:
 #              ${{ inputs.release-version }} \
 #              ${{ inputs.environment }}
 
-  update-manifest:
-    needs: [ prepare, deploy ]
+  manifest:
+    needs: deploy
     uses: ./.github/workflows/update-manifest.yml
     with:
       artifact-name: ${{ inputs.artifact-name }}

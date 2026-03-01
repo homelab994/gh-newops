@@ -130,7 +130,7 @@ jobs:
             mv tmp.json "$PROMOTE_FILE"
           done
 
-      - name: Commit promote metadata
+      - name: Commit promoted metadata
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"

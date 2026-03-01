@@ -69,7 +69,7 @@ jobs:
             exit 1
           fi
 
-      - name: Generate promote-target.json
+      - name: Generate promote-${{ inputs.target-env }}.json
         run: |
           SRC="vm-manifests/${{ inputs.source-env }}.json"
           DST="vm-manifests/${{ inputs.target-env }}.json"
@@ -108,7 +108,7 @@ jobs:
             }
             ' > $PROMOTE_FILE
 
-      - name: Commit promote-target.json
+      - name: Commit promote-${{ inputs.target-env }}.json
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
