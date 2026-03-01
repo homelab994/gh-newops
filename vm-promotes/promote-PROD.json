@@ -3,7 +3,9 @@
     "source": "PREPROD",
     "target": "PROD",
     "reviewed": true,
-    "promoted": [],
+    "promoted": [
+      "All"
+    ],
     "generatedBy": "grusu94",
     "generationRunId": "22545016889",
     "generatedAt": "2026-03-01T14:05:25Z"
