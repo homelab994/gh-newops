@@ -1,12 +1,10 @@
-name: Monthly Version Reset
+name: Monthly Bump Version
 
 on:
-#  schedule:
-#    - cron: '0 0 1 * *'
-  workflow_dispatch:
+  workflow_call:
 
 jobs:
-  reset-version:
+  bump-version:
     runs-on: ubuntu-latest
     steps:
       - name: Generate GitHub App token
@@ -30,8 +28,8 @@ jobs:
           java-version: 17
           cache: maven
 
-      - name: Reset to new month version
-        id: new-month-version
+      - name: Bump month version
+        id: bump-month
         run: |
           YEAR=$(date -u +%y)
           MONTH=$(date -u +%-m)
@@ -41,9 +39,9 @@ jobs:
             versions:commit
           echo "new-version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
 
-      - name: Commit monthly reset
+      - name: Commit monthly bump
         run: |
-          VERSION=${{ steps.new-month-version.outputs.new-version }}
+          VERSION=${{ steps.bump-month.outputs.new-version }}
           
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
