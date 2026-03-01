@@ -1,10 +1,10 @@
-name: Increment version
+name: Bump patch version
 
 on:
   workflow_call:
     inputs:
       branch-name:
-        description: "Branch name to be incremented"
+        description: "Branch name to be bumped"
         required: false
         type: string
         default: 'develop'
