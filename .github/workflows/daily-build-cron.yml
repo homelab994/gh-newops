@@ -1,8 +1,7 @@
 name: Scheduled Daily Build
 
 on:
-  schedule:
-    - cron: "* * * * *"
+  workflow_dispatch:
 
 jobs:
   build:
