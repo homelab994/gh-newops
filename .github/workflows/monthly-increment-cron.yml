@@ -1,0 +1,19 @@
+name: Scheduled Monthly Increment
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - service: gh-simple-spring
+            repository: homelab994/gh-simple-spring
+          - service: gh-simple-spring
+            repository: homelab994/gh-simple-spring
+    uses: ./.github/workflows/monthly-increment-version.yml
+    with:
+      service: ${{ matrix.service }}
+      repository: ${{ matrix.repository }}
+    secrets: inherit
