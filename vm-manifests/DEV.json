@@ -1,5 +1,6 @@
 {
   "another-service": "26.2.99",
-  "gh-simple-spring": "26.3.2",
-  "inexistent-service": "25.12.5"
+  "gh-simple-spring": "26.3.10",
+  "inexistent-service": "25.12.5",
+  "gh-another-spring": "26.3.11"
 }
