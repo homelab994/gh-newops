@@ -45,7 +45,7 @@ jobs:
           cache: maven
 
       - name: Increment version
-        working-directory: ${{ inputs.service }}
+        working-directory: ${{ inputs.service-name }}
         id: increment
         run: |
           YEAR=$(date -u +%y)
@@ -57,7 +57,7 @@ jobs:
           echo "new-version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Commit monthly increment
-        working-directory: ${{ inputs.service }}
+        working-directory: ${{ inputs.service-name }}
         run: |
           VERSION=${{ steps.increment.outputs.new-version }}
           
