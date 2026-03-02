@@ -1,0 +1,15 @@
+{
+  "metadata": {
+    "source": "DEV",
+    "target": "PREPROD",
+    "reviewed": false,
+    "promoted": [],
+    "generatedBy": "grusu94",
+    "generationRunId": "22577857933",
+    "generatedAt": "2026-03-02T13:21:29Z"
+  },
+  "services": {
+    "another-service": "26.2.99",
+    "gh-simple-spring": "26.2.58"
+  }
+}
