@@ -8,12 +8,12 @@ jobs:
     strategy:
       matrix:
         include:
-          - service: gh-simple-spring
-            repository: homelab994/gh-simple-spring
-          - service: gh-simple-spring
-            repository: homelab994/gh-simple-spring
+          - service-name: gh-simple-spring
+            repository-name: homelab994/gh-simple-spring
+          - service-name: gh-simple-spring
+            repository-name: homelab994/gh-simple-spring
     uses: ./.github/workflows/monthly-increment-version.yml
     with:
-      service: ${{ matrix.service }}
-      repository: ${{ matrix.repository }}
+      service-name: ${{ matrix.service-name }}
+      repository-name: ${{ matrix.repository-name }}
     secrets: inherit
