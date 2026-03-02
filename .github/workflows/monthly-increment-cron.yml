@@ -10,8 +10,6 @@ jobs:
         include:
           - service-name: gh-simple-spring
             repository-name: homelab994/gh-simple-spring
-          - service-name: gh-simple-spring
-            repository-name: homelab994/gh-simple-spring
     uses: ./.github/workflows/monthly-increment-version.yml
     with:
       service-name: ${{ matrix.service-name }}
