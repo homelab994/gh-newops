@@ -47,12 +47,12 @@ jobs:
 
       - name: Update manifest with retry
         env:
-          MANIFEST_FILE="vm-manifests/${{ inputs.environment }}.json"
-          SERVICE="${{ inputs.artifact-name }}"
-          VERSION="${{ inputs.release-version }}"
+          MANIFEST_FILE: "vm-manifests/${{ inputs.environment }}.json"
+          SERVICE: "${{ inputs.artifact-name }}"
+          VERSION: "${{ inputs.release-version }}"
+          MAX_RETRIES: 10
+          BASE_DELAY: 2
         run: |
-          MAX_RETRIES=10
-          BASE_DELAY=2
           COUNT=0
           
           while [ $COUNT -lt $MAX_RETRIES ]; do
