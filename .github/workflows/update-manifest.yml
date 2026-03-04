@@ -49,12 +49,13 @@ jobs:
           MAX_RETRIES: 10
           BASE_DELAY: 2
         run: |
+          set -euo pipefail
+          
           COUNT=0
           
           while [ $COUNT -lt $MAX_RETRIES ]; do
           
             git fetch origin develop
-            git checkout develop
             git reset --hard origin/develop
             
             jq --arg svc "$SERVICE" \
