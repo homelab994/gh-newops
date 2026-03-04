@@ -16,10 +16,6 @@ on:
         type: string
         required: true
 
-concurrency:
-  group: update-manifest-${{ inputs.environment }}
-  cancel-in-progress: false
-
 jobs:
   update:
     runs-on: ubuntu-latest
