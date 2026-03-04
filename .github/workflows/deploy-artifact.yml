@@ -123,19 +123,26 @@ jobs:
         host: ${{ fromJson(needs.prepare.outputs.hosts) }}
 
     steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: homelab994
+          repositories: gh-newops
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
       - name: Deploy to ${{ matrix.host }}
         run: |
           echo "HOSTS: ${{ matrix.host }}"
-#        uses: appleboy/ssh-action@v1
-#        with:
-#          host: ${{ matrix.host }}
-#          username: deploy
-#          key: ${{ secrets.SSH_KEY }}
-#          script: |
-#            /opt/myapp/deploy.sh \
-#              ${{ inputs.artifact-name }} \
-#              ${{ inputs.release-version }} \
-#              ${{ inputs.environment }}
 
   manifest:
     needs: deploy
