@@ -40,29 +40,52 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
           ref: develop
 
-      - name: Update manifest
+      - name: Configure Git
         run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+      - name: Update manifest with retry
+        env:
           MANIFEST_FILE="vm-manifests/${{ inputs.environment }}.json"
           SERVICE="${{ inputs.artifact-name }}"
           VERSION="${{ inputs.release-version }}"
+        run: |
+          MAX_RETRIES=10
+          BASE_DELAY=2
+          COUNT=0
           
-          jq --arg svc "$SERVICE" \
-             --arg ver "$VERSION" \
-             '.[$svc]=$ver' $MANIFEST_FILE > tmp.json
+          while [ $COUNT -lt $MAX_RETRIES ]; do
           
-          mv tmp.json $MANIFEST_FILE
-
-      - name: Commit and push changes
-        run: |    
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
+            git fetch origin develop
+            git checkout develop
+            git reset --hard origin/develop
+            
+            jq --arg svc "$SERVICE" \
+               --arg ver "$VERSION" \
+               '.[$svc]=$ver' $MANIFEST_FILE > tmp.json
+            
+            mv tmp.json $MANIFEST_FILE
+            
+            git add vm-manifests/${{ inputs.environment }}.json
+            
+            if git diff --cached --quiet; then
+              echo "No changes detected. Skipping commit."
+              exit 0
+            fi
+            
+            git commit -m "[MANIFEST] ${{ inputs.artifact-name }}:v${{ inputs.release-version }} -> ${{ inputs.environment }}"
+            
+            if git push origin develop; then
+              echo "Push succeeded"
+              exit 0
+            fi
+            
+            COUNT=$((COUNT+1))
+            SLEEP_TIME=$((BASE_DELAY * COUNT))
+            echo "Sleeping $SLEEP_TIME seconds..."
+            sleep $SLEEP_TIME
+          done
           
-          git add vm-manifests/${{ inputs.environment }}.json
-          
-          if git diff --cached --quiet; then
-            echo "No changes detected. Skipping commit."
-            exit 0
-          fi
-    
-          git commit -m "[MANIFEST] ${{ inputs.artifact-name }}:v${{ inputs.release-version }} -> ${{ inputs.environment }}"
-          git push origin develop
+          echo "Failed after $MAX_RETRIES retries"
+          exit 1
