@@ -13,7 +13,7 @@ on:
         required: true
 
 jobs:
-  build-analyze:
+  build-image:
     runs-on: ubuntu-latest
     steps:
       - name: Generate GitHub App token
@@ -50,7 +50,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build Docker image
-        run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.artifact-name }}:${{ inputs.release-version }} .
+        run: docker build -t ${{ vars.DOCKERHUB_USERNAME }}/${{ inputs.artifact-name }}:${{ inputs.release-version }} .
 
       - name: Push Docker image
-        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.artifact-name }}:${{ inputs.release-version }}
+        run: docker push ${{ vars.DOCKERHUB_USERNAME }}/${{ inputs.artifact-name }}:${{ inputs.release-version }}
