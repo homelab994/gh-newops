@@ -1,0 +1,84 @@
+name: Update Image Version K8s
+
+on:
+  workflow_call:
+    inputs:
+      artifact-name:
+        description: 'Artifact name'
+        type: string
+        required: true
+      release-version:
+        description: 'Release version'
+        type: string
+        required: true
+      environment:
+        description: 'Target environment'
+        type: string
+        required: true
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: homelab994
+          repositories: gh-newops
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          repository: homelab994/gh-newops
+          token: ${{ steps.app-token.outputs.token }}
+          ref: develop
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+      - name: Update helm version with retry
+        env:
+          SERVICE: "${{ inputs.artifact-name }}"
+          VERSION: "${{ inputs.release-version }}"
+          HELM_FILE: "${{ inputs.environment }}/$SERVICE-values.yml"
+          MAX_RETRIES: 10
+          BASE_DELAY: 2
+        run: |
+          set -euo pipefail
+          
+          COUNT=0
+          
+          while [ $COUNT -lt $MAX_RETRIES ]; do
+          
+            git fetch origin develop
+            git reset --hard origin/develop
+            
+            yq -i '.image.tag = ${VERSION}' $HELM_FILE
+            
+            git add $HELM_FILE
+            
+            if git diff --cached --quiet; then
+              echo "No changes detected. Skipping commit."
+              exit 0
+            fi
+            
+            git commit -m "[HELM] ${{ inputs.artifact-name }}:v${{ inputs.release-version }} -> ${{ inputs.environment }}"
+            
+            if git push origin develop; then
+              echo "Push succeeded"
+              exit 0
+            fi
+            
+            COUNT=$((COUNT+1))
+            SLEEP_TIME=$((BASE_DELAY * COUNT))
+            echo "Sleeping $SLEEP_TIME seconds..."
+            sleep $SLEEP_TIME
+          done
+          
+          echo "Failed after $MAX_RETRIES retries"
+          exit 1
