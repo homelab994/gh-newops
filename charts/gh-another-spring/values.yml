@@ -1,0 +1,11 @@
+appName: gh-another-spring
+
+image:
+  repository: georgerusu994/gh-another-spring
+  tag: "26.3.12"
+  pullPolicy: IfNotPresent
+
+configmap:
+  name: gh-another-spring-configmap-v1
+  data:
+    CUSTOM_HEADER: 'This app was deployed with helm!'

@@ -1,0 +1,6 @@
+replicaCount: 4
+
+configmap:
+  name: gh-simple-spring-configmap-v1
+  data:
+    CUSTOM_HEADER: 'This is on the PROD environment!'

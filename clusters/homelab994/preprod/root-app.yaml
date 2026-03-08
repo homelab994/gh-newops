@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: homelab-preprod
+  namespace: argocd
+
+spec:
+  project: homelab994
+
+  source:
+    repoURL: https://github.com/homelab994/homelab-gitops.git
+    targetRevision: HEAD
+    path: clusters/homelab994/preprod
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

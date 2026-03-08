@@ -1,0 +1,6 @@
+apiVersion: v2
+name: gh-simple-spring
+description: Simple Spring App
+type: application
+version: 1.0.0
+appVersion: "1.0.0"

@@ -1,0 +1,37 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: homelab994-preprod
+  namespace: argocd
+spec:
+  generators:
+    - git:
+        repoURL: https://github.com/homelab994/homelab-gitops.git
+        revision: HEAD
+        directories:
+          - path: charts/*
+
+  template:
+    metadata:
+      name: '{{path.basename}}-preprod'
+
+    spec:
+      project: homelab994
+
+      source:
+        repoURL: https://github.com/homelab994/homelab-gitops.git
+        targetRevision: HEAD
+        path: '{{path}}'
+
+        helm:
+          valueFiles:
+            - ../../environments/preprod/{{path.basename}}-values.yaml
+
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: preprod
+
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
