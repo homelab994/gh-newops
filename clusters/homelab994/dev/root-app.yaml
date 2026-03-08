@@ -8,7 +8,7 @@ spec:
   project: homelab994
 
   source:
-    repoURL: https://github.com/homelab994/homelab-gitops.git
+    repoURL: https://github.com/homelab994/gh-newops
     targetRevision: HEAD
     path: clusters/homelab994/dev
 

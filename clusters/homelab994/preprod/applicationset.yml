@@ -6,7 +6,7 @@ metadata:
 spec:
   generators:
     - git:
-        repoURL: https://github.com/homelab994/homelab-gitops.git
+        repoURL: https://github.com/homelab994/gh-newops
         revision: HEAD
         directories:
           - path: charts/*
@@ -19,7 +19,7 @@ spec:
       project: homelab994
 
       source:
-        repoURL: https://github.com/homelab994/homelab-gitops.git
+        repoURL: https://github.com/homelab994/gh-newops
         targetRevision: HEAD
         path: '{{path}}'
 
