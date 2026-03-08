@@ -1,11 +1,10 @@
 appName: gh-simple-spring
 
+replicaCount: 1
+
 image:
   repository: georgerusu994/gh-simple-spring
-  tag: "26.3.7"
-  pullPolicy: IfNotPresent
+  tag: "1.0.0"
 
-configmap:
-  name: gh-simple-spring-configmap-v1
-  data:
-    CUSTOM_HEADER: 'This app was deployed with helm!'
+service:
+  port: 8080

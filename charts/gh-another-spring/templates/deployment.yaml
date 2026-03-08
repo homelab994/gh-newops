@@ -15,9 +15,7 @@ spec:
         app: {{ .Values.appName }}
     spec:
       containers:
-        - name: {{ .Chart.name }}
+        - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           ports:
-            - containerPort: 9001
-          envFrom:
-            name: {{ .Values.configmap.name }}
+            - containerPort: {{ .Values.service.port }}

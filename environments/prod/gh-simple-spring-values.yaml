@@ -1,6 +1,8 @@
-replicaCount: 4
+replicaCount: 2
 
-configmap:
-  name: gh-simple-spring-configmap-v1
-  data:
-    CUSTOM_HEADER: 'This is on the PROD environment!'
+image:
+  repository: georgerusu994/gh-simple-spring
+  tag: "26.3.7"
+
+service:
+  port: 9090

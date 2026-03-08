@@ -1,6 +1,8 @@
 replicaCount: 2
 
-configmap:
-  name: gh-another-spring-configmap-v1
-  data:
-    CUSTOM_HEADER: 'This is on the DEV environment!'
+image:
+  repository: georgerusu994/gh-another-spring
+  tag: "26.3.13"
+
+service:
+  port: 9001

@@ -6,9 +6,7 @@ metadata:
     app: {{ .Values.appName }}
 spec:
   selector:
-    app: { { .Values.appName } }
+    app: {{ .Values.appName }}
   ports:
-    - port: 9000
-      protocol: TCP
-      name: node
-  type: NodePort
+    - port: {{ .Values.service.port }}
+      targetPort: 9000
