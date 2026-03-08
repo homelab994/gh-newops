@@ -58,7 +58,7 @@ jobs:
             git fetch origin develop
             git reset --hard origin/develop
             
-            yq -i '.image.tag = ${VERSION}' $HELM_FILE
+            yq -i '.image.tag = env(VERSION)' $HELM_FILE
             
             git add $HELM_FILE
             
