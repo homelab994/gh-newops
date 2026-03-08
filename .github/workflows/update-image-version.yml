@@ -45,7 +45,7 @@ jobs:
         env:
           SERVICE: "${{ inputs.artifact-name }}"
           VERSION: "${{ inputs.release-version }}"
-          HELM_FILE: "${{ inputs.environment }}/$SERVICE-values.yml"
+          HELM_FILE: "${{ inputs.environment }}/${{ inputs.artifact-name }}-values.yml"
           MAX_RETRIES: 10
           BASE_DELAY: 2
         run: |
