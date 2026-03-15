@@ -1,0 +1,14 @@
+appName: gh-gateway
+
+replicaCount: 1
+
+activeProfile: default
+configServer: "optional:configserver:http://gh-config-server:9090"
+eurekaDefaultZone: "http://gh-eureka-server:9095/eureka"
+
+image:
+  repository: georgerusu994/gh-gateway
+  tag: "1.0.0"
+
+service:
+  port: 8099
