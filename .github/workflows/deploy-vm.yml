@@ -76,7 +76,7 @@ jobs:
           echo "hosts=$HOSTS" >> $GITHUB_OUTPUT
 
   deploy-vm:
-    needs: prepare
+    needs: prepare-vm
     if: needs.prepare.outputs.hosts-empty != 'true'
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
