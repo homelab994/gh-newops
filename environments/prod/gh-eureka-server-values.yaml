@@ -1,0 +1,8 @@
+replicaCount: 2
+
+image:
+  repository: georgerusu994/gh-eureka-server
+  tag: "26.3.0"
+
+service:
+  port: 9095
