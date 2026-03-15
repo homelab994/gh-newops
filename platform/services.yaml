@@ -4,4 +4,4 @@ services:
   gh-simple-spring:
     type: k8s
   gh-another-spring:
-    type: vm
+    type: k8s
