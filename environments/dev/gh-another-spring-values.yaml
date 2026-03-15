@@ -1,6 +1,8 @@
 replicaCount: 2
+
 image:
   repository: georgerusu994/gh-another-spring
   tag: "26.3.27"
+
 service:
   port: 9001

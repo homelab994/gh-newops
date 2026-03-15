@@ -1,5 +1,7 @@
 replicaCount: 2
 
+activeProfile: prod
+
 image:
   repository: georgerusu994/gh-simple-spring
   tag: "26.3.7"
