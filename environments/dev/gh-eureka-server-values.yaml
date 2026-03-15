@@ -2,6 +2,6 @@ replicaCount: 2
 activeProfile: dev
 image:
   repository: georgerusu994/gh-eureka-server
-  tag: "26.3.1"
+  tag: "26.3.3"
 service:
   port: 9095
