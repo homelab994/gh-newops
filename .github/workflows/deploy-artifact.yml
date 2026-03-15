@@ -64,6 +64,22 @@ jobs:
     outputs:
       type: ${{ steps.service-type.outputs.type }}
     steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: homelab994
+          repositories: gh-newops
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          repository: homelab994/gh-newops
+          token: ${{ steps.app-token.outputs.token }}
+          ref: develop
+
       - name: Get service type
         id: service-type
         run: |
