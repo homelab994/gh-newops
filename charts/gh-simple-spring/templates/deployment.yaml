@@ -26,3 +26,5 @@ spec:
               value: {{ .Values.activeProfile }}
             - name: SPRING_CONFIG_IMPORT
               value: {{ .Values.configServer }}
+            - name: EUREKA_DEFAULT_ZONE
+              value: {{ .Values.eurekaDefaultZone }}

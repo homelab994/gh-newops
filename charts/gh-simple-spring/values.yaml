@@ -4,6 +4,7 @@ replicaCount: 1
 
 activeProfile: default
 configServer: "optional:configserver:http://gh-config-server:9090"
+eurekaDefaultZone: "http://gh-eureka-server:9095/eureka"
 
 image:
   repository: georgerusu994/gh-simple-spring
