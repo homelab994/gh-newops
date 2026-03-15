@@ -1,5 +1,6 @@
 {
   "gh-simple-spring": "26.3.0",
   "gh-another-spring": "26.3.27",
-  "gh-config-server": "26.3.8"
+  "gh-config-server": "26.3.8",
+  "gh-eureka-server": "26.3.1"
 }
