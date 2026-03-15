@@ -2,6 +2,9 @@ appName: gh-eureka-server
 
 replicaCount: 1
 
+activeProfile: default
+configServer: "optional:configserver:http://gh-config-server:9090"
+
 image:
   repository: georgerusu994/gh-eureka-server
   tag: "1.0.0"
