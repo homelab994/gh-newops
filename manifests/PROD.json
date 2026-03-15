@@ -3,5 +3,6 @@
   "gh-simple-spring": "26.2.35-0",
   "inexistent-service": "25.12.5",
   "gh-another-spring": "26.3.27",
-  "gh-config-server": "26.3.8"
+  "gh-config-server": "26.3.8",
+  "gh-eureka-server": "26.3.3"
 }
