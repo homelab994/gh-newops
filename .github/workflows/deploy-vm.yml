@@ -22,13 +22,30 @@ on:
         default: 'All'
 
 jobs:
-  prepare:
+  prepare-vm:
     runs-on: ubuntu-latest
     outputs:
       hosts: ${{ steps.hosts-list.outputs.hosts }}
       hosts-empty: ${{ steps.hosts-list.outputs.hosts-empty }}
     steps:
-      - id: hosts-list
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: homelab994
+          repositories: gh-newops
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          repository: homelab994/gh-newops
+          token: ${{ steps.app-token.outputs.token }}
+          ref: develop
+
+      - name: Get host list
+        id: hosts-list
         run: |
           ENV="${{ inputs.environment }}"
           TARGET="${{ inputs.target }}"
@@ -58,7 +75,7 @@ jobs:
 
           echo "hosts=$HOSTS" >> $GITHUB_OUTPUT
 
-  deploy:
+  deploy-vm:
     needs: prepare
     if: needs.prepare.outputs.hosts-empty != 'true'
     runs-on: ubuntu-latest
