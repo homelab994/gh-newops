@@ -47,11 +47,12 @@ on:
         description: 'Specify host or all'
         type: choice
         options:
-          - All
-          - Primary
-          - Backup
-          - Standalone
-        required: true
+          - 'All'
+          - 'Primary'
+          - 'Backup'
+          - 'Standalone'
+        required: false
+        default: 'All'
 
 concurrency:
   group: deploy-artifact-${{ inputs.artifact-name }}-env-${{ inputs.environment }}
@@ -61,91 +62,38 @@ jobs:
   prepare:
     runs-on: ubuntu-latest
     outputs:
-      hosts: ${{ steps.hosts-list.outputs.hosts }}
-      hosts-empty: ${{ steps.hosts-list.outputs.hosts-empty }}
+      type: ${{ steps.service-type.outputs.type }}
     steps:
-      - id: hosts-list
+      - name: Get service type
+        id: service-type
         run: |
-          ENV="${{ inputs.environment }}"
-          TARGET="${{ inputs.target }}"
+          SERVICE=${{ inputs.artifact-name }}
+          TYPE=$(yq ".services[\"$SERVICE\"].type" platform/services.yaml)
+          
+          echo "type=$TYPE" >> $GITHUB_OUTPUT    
 
-          case "$ENV" in
-            DEV)
-              PRIMARY='["dev1.company.com"]'
-              BACKUP='[]'
-              STANDALONE='[]'
-              ;;
-            INT)
-              PRIMARY='["int1.company.com"]'
-              BACKUP='["int2.company.com"]'
-              STANDALONE='[]'
-              ;;
-            PREPROD)
-              PRIMARY='["preprod1.company.com"]'
-              BACKUP='["preprod2.company.com"]'
-              STANDALONE='["preprod3.company.com"]'
-              ;;
-            PROD)
-              PRIMARY='["prod1.company.com"]'
-              BACKUP='["prod2.company.com"]'
-              STANDALONE='["prod3.company.com"]'
-              ;;
-          esac
-          
-          if [ "$TARGET" = "Primary" ]; then
-            HOSTS=$PRIMARY
-          elif [ "$TARGET" = "Backup" ]; then
-            HOSTS=$BACKUP
-          elif [ "$TARGET" = "Standalone" ]; then
-            HOSTS=$STANDALONE
-          else
-            HOSTS=$(jq -c -n "$PRIMARY + $BACKUP")
-          fi
-          
-          if [ "$HOSTS" = "[]" ]; then
-            echo "No hosts available in environment: $ENV for selection: $TARGET"
-            echo "hosts-empty=true" >> $GITHUB_OUTPUT
-          else
-            echo "hosts-empty=false" >> $GITHUB_OUTPUT
-          fi
-          
-          echo "hosts=$HOSTS" >> $GITHUB_OUTPUT
-
-  deploy:
+  deploy-vm:
     needs: prepare
-    if: needs.prepare.outputs.hosts-empty != 'true'
-    runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
+    if: needs.prepare.outputs.type == 'vm'
+    uses: ./.github/workflows/deploy-vm.yml
+    with:
+      artifact-name: ${{ inputs.artifact-name }}
+      release-version: ${{ inputs.release-version }}
+      environment: ${{ inputs.environment }}
+      target: ${{ inputs.target }}
 
-    strategy:
-      max-parallel: 1
-      matrix:
-        host: ${{ fromJson(needs.prepare.outputs.hosts) }}
-
-    steps:
-      - name: Generate GitHub App token
-        id: app-token
-        uses: actions/create-github-app-token@v1
-        with:
-          app-id: ${{ vars.APP_ID }}
-          private-key: ${{ secrets.APP_PRIVATE_KEY }}
-          owner: homelab994
-          repositories: gh-newops
-
-      - name: Setup SSH
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
-          chmod 600 ~/.ssh/known_hosts
-
-      - name: Deploy to ${{ matrix.host }}
-        run: |
-          echo "HOSTS: ${{ matrix.host }}"
+  deploy-k8s:
+    needs: prepare
+    if: needs.prepare.outputs.type == 'k8s'
+    uses: ./.github/workflows/deploy-k8s.yml
+    with:
+      artifact-name: ${{ inputs.artifact-name }}
+      release-version: ${{ inputs.release-version }}
+      environment: ${{ inputs.environment }}
 
   manifest:
-    needs: deploy
+    needs: [ deploy-vm, deploy-k8s ]
+    if: always()
     uses: ./.github/workflows/update-manifest.yml
     with:
       artifact-name: ${{ inputs.artifact-name }}

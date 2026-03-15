@@ -1,4 +1,4 @@
-name: Update Environment Manifest
+name: Deploy k8s
 
 on:
   workflow_call:
@@ -17,7 +17,7 @@ on:
         required: true
 
 jobs:
-  update:
+  deploy-k8s:
     runs-on: ubuntu-latest
     steps:
       - name: Generate GitHub App token
@@ -41,11 +41,20 @@ jobs:
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
-      - name: Update manifest with retry
+      - name: Normalize environment
+        id: normalize-env
+        run: |
+          ENV_UPPER="${{ inputs.environment }}"
+          ENV_LOWER=$(echo "$ENV_UPPER" | tr '[:upper:]' '[:lower:]')
+          
+          echo "env-upper=$ENV_UPPER" >> $GITHUB_OUTPUT
+          echo "env-lower=$ENV_LOWER" >> $GITHUB_OUTPUT
+
+      - name: Update helm version with retry
         env:
-          MANIFEST_FILE: "manifests/${{ inputs.environment }}.json"
           SERVICE: "${{ inputs.artifact-name }}"
           VERSION: "${{ inputs.release-version }}"
+          HELM_FILE: "environments/${{ steps.normalize-env.outputs.env-lower }}/${{ inputs.artifact-name }}-values.yaml"
           MAX_RETRIES: 10
           BASE_DELAY: 2
         run: |
@@ -57,27 +66,23 @@ jobs:
           
             git fetch origin develop
             git reset --hard origin/develop
-            
-            jq --arg svc "$SERVICE" \
-               --arg ver "$VERSION" \
-               '.[$svc]=$ver' $MANIFEST_FILE > tmp.json
-            
-            mv tmp.json $MANIFEST_FILE
-            
-            git add manifests/${{ inputs.environment }}.json
-            
+          
+            yq -i '.image.tag = env(VERSION)' $HELM_FILE
+          
+            git add $HELM_FILE
+          
             if git diff --cached --quiet; then
               echo "No changes detected. Skipping commit."
               exit 0
             fi
-            
-            git commit -m "[MANIFEST] ${{ inputs.artifact-name }}:v${{ inputs.release-version }} -> ${{ inputs.environment }}"
-            
+          
+            git commit -m "[HELM] ${{ inputs.artifact-name }}:v${{ inputs.release-version }} -> ${{ inputs.environment }}"
+          
             if git push origin develop; then
               echo "Push succeeded"
               exit 0
             fi
-            
+          
             COUNT=$((COUNT+1))
             SLEEP_TIME=$((BASE_DELAY * COUNT))
             echo "Sleeping $SLEEP_TIME seconds..."

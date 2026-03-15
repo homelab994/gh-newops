@@ -1,0 +1,26 @@
+hosts:
+  DEV:
+    primary:
+      - dev1.company.com
+
+  INT:
+    primary:
+      - int1.company.com
+    backup:
+      - int2.company.com
+
+  PREPROD:
+    primary:
+      - preprod1.company.com
+    backup:
+      - preprod2.company.com
+    standalone:
+      - preprod3.company.com
+
+  PROD:
+    primary:
+      - prod1.company.com
+    backup:
+      - prod2.company.com
+    standalone:
+      - prod3.company.com

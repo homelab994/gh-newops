@@ -1,0 +1,7 @@
+services:
+  gh-config-server:
+    type: k8s
+  gh-simple-spring:
+    type: k8s
+  gh-another-service:
+    type: vm
