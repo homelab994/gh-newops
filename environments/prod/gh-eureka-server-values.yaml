@@ -1,5 +1,7 @@
 replicaCount: 2
 
+activeProfile: prod
+
 image:
   repository: georgerusu994/gh-eureka-server
   tag: "26.3.0"
