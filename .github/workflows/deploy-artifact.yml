@@ -97,6 +97,7 @@ jobs:
       release-version: ${{ inputs.release-version }}
       environment: ${{ inputs.environment }}
       target: ${{ inputs.target }}
+    secrets: inherit
 
   deploy-k8s:
     needs: prepare
@@ -106,6 +107,7 @@ jobs:
       artifact-name: ${{ inputs.artifact-name }}
       release-version: ${{ inputs.release-version }}
       environment: ${{ inputs.environment }}
+    secrets: inherit
 
   manifest:
     needs: [ deploy-vm, deploy-k8s ]
