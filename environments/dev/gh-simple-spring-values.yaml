@@ -1,10 +1,7 @@
 replicaCount: 2
-
 activeProfile: dev
-
 image:
   repository: georgerusu994/gh-simple-spring
-  tag: "26.3.23"
-
+  tag: "26.3.24"
 service:
   port: 9000
