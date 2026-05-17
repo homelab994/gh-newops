@@ -1,0 +1,8 @@
+appName: gh-another-spring
+env: prod
+
+configs:
+  files:
+    - configs/base/application.yml
+    - configs/prod/application-prod.yml
+    - configs/prod/application-gh-another-spring-prod.yml

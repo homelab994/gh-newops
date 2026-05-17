@@ -31,34 +31,6 @@ Deployments are organized across four environments:
 
 - **homelab994** - Target Kubernetes cluster with environment-specific configurations
 
-## 📁 Directory Structure
-
-```
-gh-newops/
-├── charts/                    # Helm charts for each microservice
-│   ├── gh-another-spring/
-│   ├── gh-config-server/
-│   ├── gh-eureka-server/
-│   ├── gh-gateway/
-│   └── gh-simple-spring/
-├── clusters/                  # ArgoCD cluster configurations
-│   └── homelab994/
-│       ├── dev/
-│       ├── int/
-│       ├── preprod/
-│       └── prod/
-├── environments/              # Environment-specific Helm values
-│   ├── dev/
-│   ├── int/
-│   ├── preprod/
-│   └── prod/
-├── manifests/                 # Kubernetes manifests (JSON)
-├── platform/                  # Platform configuration
-├── promotes/                  # Promotion configuration files
-├── scripts/                   # Deployment and utility scripts
-└── README.md
-```
-
 ## 🚀 Getting Started
 
 ### Prerequisites
@@ -84,17 +56,6 @@ gh-newops/
    kubectl create namespace prod
    ```
 
-3. **Deploy the root application for your environment:**
-   ```bash
-   kubectl apply -f clusters/homelab994/dev/root-app.yaml
-   ```
-
-   Or for other environments:
-   ```bash
-   kubectl apply -f clusters/homelab994/int/root-app.yaml
-   kubectl apply -f clusters/homelab994/preprod/root-app.yaml
-   kubectl apply -f clusters/homelab994/prod/root-app.yaml
-   ```
 
 ## 🔄 GitOps Workflow
 
@@ -142,7 +103,7 @@ All applications are configured with:
    touch environments/prod/my-new-service-values.yaml
    ```
 
-3. **Update platform/services.yaml:**
+3. **Update platform-config/services.yaml:**
    ```yaml
    services:
      my-new-service:

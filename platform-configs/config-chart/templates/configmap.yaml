@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.appName }}-{{ .Values.env }}-config
+data:
+  {{- range $file := .Values.configs.files }}
+  {{ base $file }}: |
+    {{ $.Files.Get $file | trim | nindent 4 }}
+  {{- end }}

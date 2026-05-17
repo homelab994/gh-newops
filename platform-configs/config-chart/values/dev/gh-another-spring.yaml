@@ -1,0 +1,8 @@
+appName: gh-another-spring
+env: dev
+
+configs:
+  files:
+    - configs/base/application.yml
+    - configs/dev/application-dev.yml
+    - configs/dev/application-gh-another-spring-dev.yml

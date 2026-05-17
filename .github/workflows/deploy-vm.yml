@@ -50,7 +50,7 @@ jobs:
           ENV="${{ inputs.environment }}"
           TARGET="${{ inputs.target }}"
 
-          VM_HOSTS="platform/vm-hosts.yaml"
+          VM_HOSTS="platform-config/vm-hosts.yaml"
 
           PRIMARY=$(yq -o=json ".hosts.$ENV.primary // []" $VM_HOSTS)
           BACKUP=$(yq -o=json ".hosts.$ENV.backup // []" $VM_HOSTS)

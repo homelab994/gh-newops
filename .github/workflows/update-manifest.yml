@@ -43,7 +43,7 @@ jobs:
 
       - name: Update manifest with retry
         env:
-          MANIFEST_FILE: "manifests/${{ inputs.environment }}.json"
+          MANIFEST_FILE: "platform-catalog/manifests/${{ inputs.environment }}.json"
           SERVICE: "${{ inputs.artifact-name }}"
           VERSION: "${{ inputs.release-version }}"
           MAX_RETRIES: 10
@@ -64,7 +64,7 @@ jobs:
             
             mv tmp.json $MANIFEST_FILE
             
-            git add manifests/${{ inputs.environment }}.json
+            git add platform-catalog/manifests/${{ inputs.environment }}.json
             
             if git diff --cached --quiet; then
               echo "No changes detected. Skipping commit."

@@ -84,7 +84,7 @@ jobs:
         id: service-type
         run: |
           SERVICE=${{ inputs.artifact-name }}
-          TYPE=$(yq ".services[\"$SERVICE\"].type" platform/services.yaml)
+          TYPE=$(yq ".services[\"$SERVICE\"].type" platform-config/services.yaml)
           
           echo "type=$TYPE" >> $GITHUB_OUTPUT    
 

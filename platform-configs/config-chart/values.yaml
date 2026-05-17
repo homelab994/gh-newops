@@ -1,0 +1,6 @@
+appName: "config-app"
+env: "dev"
+
+configs:
+  files: []
+

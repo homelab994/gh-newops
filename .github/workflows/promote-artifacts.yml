@@ -48,7 +48,7 @@ jobs:
 
       - name: Validate promote state
         run: |
-          PROMOTE_FILE="promotes/promote-${{ inputs.environment }}.json"
+          PROMOTE_FILE="platform-catalog/promotes/promote-${{ inputs.environment }}.json"
           
           if [ ! -f "$PROMOTE_FILE" ]; then
             echo "Promote file not found: $PROMOTE_FILE"
@@ -64,7 +64,7 @@ jobs:
       - name: Extract services
         id: extract-services
         run: |
-          PROMOTE_FILE="promotes/promote-${{ inputs.environment }}.json"
+          PROMOTE_FILE="platform-catalog/promotes/promote-${{ inputs.environment }}.json"
       
           SERVICES=$(jq -c '
             .services
@@ -111,7 +111,7 @@ jobs:
 
       - name: Update promoted metadata
         run: |
-          PROMOTE_FILE="promotes/promote-${{ inputs.environment }}.json"
+          PROMOTE_FILE="platform-catalog/promotes/promote-${{ inputs.environment }}.json"
           TARGETS=("${{ inputs.target }}")
           
           for TARGET in "${TARGETS[@]}"; do
@@ -135,7 +135,7 @@ jobs:
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           
-          git add promotes/promote-${{ inputs.environment }}.json
+          git add platform-catalog/promotes/promote-${{ inputs.environment }}.json
           
           if git diff --cached --quiet; then
             echo "No metadata changes."

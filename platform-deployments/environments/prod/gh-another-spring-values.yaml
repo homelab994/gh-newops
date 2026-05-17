@@ -1,0 +1,11 @@
+replicaCount: 4
+activeProfile: prod
+image:
+  repository: georgerusu994/gh-another-spring
+  tag: "26.3.27"
+service:
+  port: 9091
+configs:
+  base: ../../platform-config/base/application.yml
+  env: ../../platform-config/prod/application-prod.yml
+  service: ../../platform-config/prod/application-gh-another-spring-prod.yml

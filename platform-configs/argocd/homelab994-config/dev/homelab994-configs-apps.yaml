@@ -1,0 +1,39 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: homelab994-configs-apps-dev
+  namespace: argocd
+spec:
+  generators:
+    - git:
+        repoURL: https://github.com/homelab994/gh-newops
+        revision: HEAD
+        files:
+          - path: platform-configs/config-chart/values/dev/*.yaml
+
+  template:
+    metadata:
+      name: '{{path.filename}}-config-dev'
+      labels:
+        type: config
+
+    spec:
+      project: homelab994-configs-dev
+
+      source:
+        repoURL: https://github.com/homelab994/gh-newops
+        targetRevision: HEAD
+        path: platform-configs/config-chart
+
+        helm:
+          valueFiles:
+            - values/dev/{{path.filename}}
+
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: dev
+
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true

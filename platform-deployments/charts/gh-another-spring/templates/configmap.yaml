@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+
+metadata:
+  name: {{ .Values.appName }}-{{ .Values.activeProfile }}-config
+
+data:
+
+  application-base.yml: |
+{{ .Files.Get .Values.configs.base | nindent 4 }}
+
+  application-env.yml: |
+{{ .Files.Get .Values.configs.env | nindent 4 }}
+
+  application-service.yml: |
+{{ .Files.Get .Values.configs.service | nindent 4 }}

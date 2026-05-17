@@ -1,0 +1,8 @@
+appName: gh-simple-spring
+env: dev
+
+configs:
+  files:
+    - configs/base/application.yml
+    - configs/dev/application-dev.yml
+    - configs/dev/application-gh-simple-spring-dev.yml

@@ -46,8 +46,8 @@ jobs:
           
       - name: Validate manifests existing
         run: |
-          SRC="manifests/${{ inputs.source-env }}.json"
-          DST="manifests/${{ inputs.target-env }}.json"
+          SRC="platform-catalog/manifests/${{ inputs.source-env }}.json"
+          DST="platform-catalog/manifests/${{ inputs.target-env }}.json"
           
           if [ ! -f "$SRC" ]; then
             echo "Source manifest not found: $SRC"
@@ -71,9 +71,9 @@ jobs:
 
       - name: Generate promote-${{ inputs.target-env }}.json
         run: |
-          SRC="manifests/${{ inputs.source-env }}.json"
-          DST="manifests/${{ inputs.target-env }}.json"
-          PROMOTE_FILE="promotes/promote-${{ inputs.target-env }}.json"
+          SRC="platform-catalog/manifests/${{ inputs.source-env }}.json"
+          DST="platform-catalog/manifests/${{ inputs.target-env }}.json"
+          PROMOTE_FILE="platform-catalog/promotes/promote-${{ inputs.target-env }}.json"
           
           NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
           
@@ -113,7 +113,7 @@ jobs:
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           
-          git add promotes/promote-${{ inputs.target-env }}.json
+          git add platform-catalog/promotes/promote-${{ inputs.target-env }}.json
           
           if git diff --cached --quiet; then
             echo "No changes detected. Skipping commit."

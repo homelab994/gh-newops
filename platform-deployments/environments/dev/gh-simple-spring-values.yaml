@@ -1,0 +1,11 @@
+replicaCount: 2
+activeProfile: dev
+image:
+  repository: georgerusu994/gh-simple-spring
+  tag: "26.3.25"
+service:
+  port: 9000
+configs:
+  base: platform-deployments/configs/base/application.yml
+  env: platform-deployments/configs/dev/application-dev.yml
+  service: platform-deployments/configs/dev/application-gh-simple-spring-dev.yml
