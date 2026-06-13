@@ -26,6 +26,7 @@ spec:
         path: platform-configs/config-chart
 
         helm:
+          ignoreMissingValueFiles: true
           valueFiles:
             - values/dev/{{path.filename}}
 

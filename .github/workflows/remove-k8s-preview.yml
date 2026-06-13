@@ -1,4 +1,4 @@
-name: Deploy k8s
+name: Remove k8s preview
 
 on:
   workflow_call:
@@ -7,17 +7,13 @@ on:
         description: 'Artifact name'
         type: string
         required: true
-      release-version:
-        description: 'Release version'
-        type: string
-        required: true
       environment:
         description: 'Target environment'
         type: string
         required: true
 
 jobs:
-  deploy-k8s:
+  remove-k8s-preview:
     runs-on: ubuntu-latest
     steps:
       - name: Generate GitHub App token
@@ -50,44 +46,40 @@ jobs:
           echo "env-upper=$ENV_UPPER" >> $GITHUB_OUTPUT
           echo "env-lower=$ENV_LOWER" >> $GITHUB_OUTPUT
 
-      - name: Update helm version with retry
+      - name: Create preview values file with retry
         env:
-          SERVICE: "${{ inputs.artifact-name }}"
-          VERSION: "${{ inputs.release-version }}"
-          HELM_FILE: "platform-deployments/environments/${{ steps.normalize-env.outputs.env-lower }}/${{ inputs.artifact-name }}-values.yaml"
+          HELM_FILE: "platform-deployments/environments/preview/${{ steps.normalize-env.outputs.env-lower }}/${{ inputs.artifact-name }}-values.yaml"
           MAX_RETRIES: 10
           BASE_DELAY: 2
         run: |
           set -euo pipefail
-          
+
           COUNT=0
-          
+
           while [ $COUNT -lt $MAX_RETRIES ]; do
-          
+
             git fetch origin develop
             git reset --hard origin/develop
-          
-            sed -i "s/^  tag:.*/  tag: ${VERSION}/" "$HELM_FILE"
-          
-            git add $HELM_FILE
-          
-            if git diff --cached --quiet; then
-              echo "No changes detected. Skipping commit."
+
+            if [ ! -f "$HELM_FILE" ]; then
+              echo "Preview file already removed"
               exit 0
             fi
-          
-            git commit -m "[HELM] ${{ inputs.artifact-name }}:v${{ inputs.release-version }} -> ${{ inputs.environment }}"
-          
+
+            git rm "$HELM_FILE"
+
+            git commit -m "[HELM-PREVIEW] Remove ${{ inputs.artifact-name }} -> /preview/${{ inputs.environment }}"
+
             if git push origin develop; then
               echo "Push succeeded"
               exit 0
             fi
-          
+
             COUNT=$((COUNT+1))
             SLEEP_TIME=$((BASE_DELAY * COUNT))
             echo "Sleeping $SLEEP_TIME seconds..."
             sleep $SLEEP_TIME
           done
-          
+
           echo "Failed after $MAX_RETRIES retries"
           exit 1

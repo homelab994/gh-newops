@@ -1,4 +1,4 @@
-name: Deploy k8s
+name: Deploy k8s preview
 
 on:
   workflow_call:
@@ -7,8 +7,8 @@ on:
         description: 'Artifact name'
         type: string
         required: true
-      release-version:
-        description: 'Release version'
+      preview-version:
+        description: 'Preview version'
         type: string
         required: true
       environment:
@@ -17,7 +17,7 @@ on:
         required: true
 
 jobs:
-  deploy-k8s:
+  deploy-k8s-preview:
     runs-on: ubuntu-latest
     steps:
       - name: Generate GitHub App token
@@ -50,11 +50,11 @@ jobs:
           echo "env-upper=$ENV_UPPER" >> $GITHUB_OUTPUT
           echo "env-lower=$ENV_LOWER" >> $GITHUB_OUTPUT
 
-      - name: Update helm version with retry
+      - name: Create preview values file with retry
         env:
           SERVICE: "${{ inputs.artifact-name }}"
-          VERSION: "${{ inputs.release-version }}"
-          HELM_FILE: "platform-deployments/environments/${{ steps.normalize-env.outputs.env-lower }}/${{ inputs.artifact-name }}-values.yaml"
+          VERSION: "${{ inputs.preview-version }}"
+          HELM_FILE: "platform-deployments/environments/preview/${{ steps.normalize-env.outputs.env-lower }}/${{ inputs.artifact-name }}-values.yaml"
           MAX_RETRIES: 10
           BASE_DELAY: 2
         run: |
@@ -67,7 +67,12 @@ jobs:
             git fetch origin develop
             git reset --hard origin/develop
           
-            sed -i "s/^  tag:.*/  tag: ${VERSION}/" "$HELM_FILE"
+            mkdir -p "$(dirname "$HELM_FILE")"
+
+            yq -n '
+              .replicaCount = 1 |
+              .image.tag = env(VERSION)
+            ' > "$HELM_FILE"
           
             git add $HELM_FILE
           
@@ -76,7 +81,7 @@ jobs:
               exit 0
             fi
           
-            git commit -m "[HELM] ${{ inputs.artifact-name }}:v${{ inputs.release-version }} -> ${{ inputs.environment }}"
+            git commit -m "[HELM-PREVIEW] ${SERVICE}:v${VERSION} -> /preview/${{ inputs.environment }}"
           
             if git push origin develop; then
               echo "Push succeeded"

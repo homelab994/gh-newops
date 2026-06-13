@@ -59,9 +59,7 @@ jobs:
 
       - name: Commit new snapshot
         run: |
-          NEW_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-          
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git commit -am "Start new deployment version: $NEW_VERSION [skip ci] "
+          git commit -am "v${{ inputs.release-version }} released [skip ci]"
           git push origin ${{ inputs.branch-name }}

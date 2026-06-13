@@ -4,7 +4,7 @@ activeProfile: dev
 
 image:
   repository: georgerusu994/gh-config-server
-  tag: "26.3.8"
+  tag: 26.3.9
 
 service:
   port: 9090

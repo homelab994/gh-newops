@@ -1,7 +1,10 @@
 replicaCount: 2
+
 activeProfile: prod
+
 image:
   repository: georgerusu994/gh-config-server
-  tag: "26.3.8"
+  tag: 26.3.8
+
 service:
   port: 9095

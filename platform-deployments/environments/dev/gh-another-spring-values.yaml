@@ -4,7 +4,7 @@ activeProfile: dev
 
 image:
   repository: georgerusu994/gh-another-spring
-  tag: "26.3.27"
+  tag: 26.3.27
 
 service:
   port: 9001
