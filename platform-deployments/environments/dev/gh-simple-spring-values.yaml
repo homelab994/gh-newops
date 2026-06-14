@@ -4,7 +4,7 @@ activeProfile: dev
 
 image:
   repository: georgerusu994/gh-simple-spring
-  tag: 26.6.13
+  tag: 26.6.15
 
 service:
   port: 9000
