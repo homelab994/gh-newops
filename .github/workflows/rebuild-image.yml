@@ -1,0 +1,81 @@
+name: Rebuild image
+
+on:
+  workflow_call:
+    inputs:
+      artifact-name:
+        description: 'Artifact name'
+        type: string
+        required: true
+      release-version:
+        description: 'Release version to rebuild (e.g. 26.6.11)'
+        type: string
+        required: true
+      commits-back:
+        description: 'Number of commits to go back for version (default: 1)'
+        type: string
+        default: "1"
+        required: false
+
+jobs:
+  rebuild-image:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          fetch-depth: 0
+
+      - name: Resolve release commit
+        id: release-commit
+        env:
+          RELEASE_VERSION: ${{ inputs.release-version }}
+          COMMITS_BACK: ${{ inputs.commits_back }}
+        run: |
+          set -euo pipefail
+          
+          RELEASE_SHA=$(git log \
+            --grep="v${RELEASE_VERSION} released \[skip ci\]$" \
+            --format="%H" \
+          )
+          
+          if [ -z "$RELEASE_SHA" ]; then
+            echo "Release commit not found for version ${RELEASE_VERSION}"
+            exit 1
+          fi
+          
+          TARGET_SHA=$(git rev-parse "${RELEASE_SHA}~${COMMITS_BACK}")
+          
+          echo "release_sha=$RELEASE_SHA" >> "$GITHUB_OUTPUT"
+          echo "target_sha=$TARGET_SHA" >> "$GITHUB_OUTPUT"
+          
+          echo "Release commit: $RELEASE_SHA"
+          echo "Target commit : $TARGET_SHA"
+
+      - name: Checkout target commit
+        run: |
+          git checkout ${{ steps.release-commit.outputs.target_sha }}
+
+      - name: Show selected commit
+        run: |
+          git log -1 --oneline
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build Docker image
+        run: docker build -t ${{ vars.DOCKERHUB_USERNAME }}/${{ inputs.artifact-name }}:${{ inputs.release-version }} .
+
+      - name: Push Docker image
+        run: docker push ${{ vars.DOCKERHUB_USERNAME }}/${{ inputs.artifact-name }}:${{ inputs.release-version }}
